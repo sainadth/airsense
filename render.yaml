@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: airsense-backend
+    env: node
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    plan: free
+    region: oregon
+    branch: main
