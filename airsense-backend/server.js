@@ -13,15 +13,20 @@ app.use(cors());
 app.get('/api/sensors', async (req, res) => {
     console.log("Loaded API key:", apiKey);
 
-    // Ensure you set this in your environment variables
+    const { nwlat, nwlng, selat, selng } = req.query; // Extract NW and SE points from query parameters
+
+    if (!nwlat || !nwlng || !selat || !selng) {
+        return res.status(400).send('Missing required query parameters: nwlat, nwlng, selat, selng');
+    }
+
     try {
         const response = await axios.get(BASE_URL, {
             params: {
                 fields: 'name',
-                nwlat: 28.216241,
-                nwlng: -97.665848,
-                selat: 27.411418,
-                selng: -96.934244
+                nwlat,
+                nwlng,
+                selat,
+                selng
             },
             headers: {
                 'X-API-Key': apiKey
@@ -31,7 +36,7 @@ app.get('/api/sensors', async (req, res) => {
             name: sensor[1],
             sensor_index: sensor[0]
         }));
-        // console.log("Formatted data:", formattedData);
+        console.log("Sensor indexes response:", formattedData);
         res.json(formattedData);
     } catch (error) {
         console.error(error);
