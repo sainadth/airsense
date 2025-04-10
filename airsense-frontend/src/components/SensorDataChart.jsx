@@ -14,7 +14,6 @@ import {
 } from 'recharts';
 
 import axios from 'axios';
-import { Loader } from 'lucide-react';
 
 const colors = [
   "red",
@@ -22,6 +21,9 @@ const colors = [
   "purple",
   "green",
 ];
+
+const BASE_URL = 'https://airsense-2x0h.onrender.com';
+// const BASE_URL = 'http://localhost:3000';
 
 const SensorDataChart = ({ sensors }) => {
   const [loading, setLoading] = useState(true);
@@ -31,6 +33,7 @@ const SensorDataChart = ({ sensors }) => {
     sensors.reduce((acc, sensor) => ({ ...acc, [sensor.name]: true }), {})
   );
   const [selectedField, setSelectedField] = useState('pm2.5'); // Default field
+  const [isDataReady, setIsDataReady] = useState(false); // New state to control chart updates
 
   const handleFieldChange = (event) => {
     setSelectedField(event.target.value);
@@ -50,8 +53,9 @@ const SensorDataChart = ({ sensors }) => {
 
   const fetchSensorData = async () => {
     try {
+      setIsDataReady(false); // Prevent updates until data is ready
       const sensorDataPromises = sensors.map(async (sensor) => {
-        const url = `http://localhost:3000/api/sensor/${sensor.sensor_index}/${selectedField}`;
+        const url = `${BASE_URL}/api/sensor/${sensor.sensor_index}/${selectedField}`;
         const response = await fetchSensorWithRetry(url, 5, 2000);
 
         return response.data.map((item) => ({
@@ -78,6 +82,7 @@ const SensorDataChart = ({ sensors }) => {
       );
 
       setChartData(finalData);
+      setIsDataReady(true); // Allow updates after data is ready
     } catch (error) {
       console.log("Error fetching sensor data:", error);
       setError('Failed to fetch sensor data');
@@ -109,7 +114,7 @@ const SensorDataChart = ({ sensors }) => {
   return (
     <div style={{ width: '800px', height: '400px' }} className="mx-auto">
       <div className="mb-4 justify-center flex items-center flex">
-        <label htmlFor="field-select" className="mr-2">Select Field:</label>
+        <label htmlFor="field-select" className="mr-2">Select Sensor Field:</label>
         <select
           id="field-select"
           value={selectedField}
@@ -122,8 +127,8 @@ const SensorDataChart = ({ sensors }) => {
           <option value="pressure">Pressure</option>
         </select>
       </div>
-      {loading ? (
-        <div className='flex items-center justify-center text-center '>
+      {loading || !isDataReady ? ( // Show loader if data is not ready
+        <div className='flex items-center justify-center text-center' style={{ height: '100%' }}>
           <ScaleLoader className='flex items-center justify-center text-center' />
         </div>
       ) : (
@@ -164,12 +169,37 @@ const SensorDataChart = ({ sensors }) => {
                   const date = payload[0]?.payload?.time || 'N/A';
                   return (
                     <div className="bg-white border border-gray-300 text-black p-2 rounded shadow-lg">
-                      <p><strong>Date:</strong> {date}</p>
-                      {payload.map((item, index) => (
-                        <p key={index} style={{ color: item.stroke }}>
-                          {`${item.dataKey}: ${item.value}`}
-                        </p>
-                      ))}
+                      <table>
+                        <tbody>
+
+
+                          {payload.map((item, index) => (
+                            <tr key={index} style={{ color: item.stroke }}>
+                              <td>
+                                {item.dataKey}
+                              </td>
+                              <td>
+                                {item.value}
+                              </td>
+                            </tr>
+                          ))}
+                          <tr><td>
+                            {new Date(date).toLocaleTimeString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                          })}</td></tr>
+                          <tr>
+                            <td>
+                              Central Daylight Time (GMT-05:00)
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   );
                 }
