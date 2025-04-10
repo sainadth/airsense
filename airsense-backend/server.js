@@ -1,4 +1,5 @@
 require('dotenv').config();
+process.env.TZ = process.env.TZ || 'America/Chicago'; // Set timezone to CDT
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -55,7 +56,9 @@ app.get('/api/sensor/:sensor_index/:selectedField', async (req, res) => {
                 sensor_index: req.params.sensor_index,
                 fields: selectedField,
                 average: '10',
-                start_timestamp: Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 3, // 3 days
+                start_timestamp: Math.floor(Date.now({
+                    timeZone: 'CDT'
+                }) / 1000) - 60 * 60 * 24 * 3, // 3 days
             },
             headers: {
                 'X-API-Key': apiKey
@@ -87,4 +90,5 @@ app.get('/api/sensor/:sensor_index/:selectedField', async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
+    console.log(`Timezone set to: ${process.env.TZ}`);
 });
