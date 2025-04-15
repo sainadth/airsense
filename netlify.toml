@@ -1,4 +1,5 @@
 [build]
+  base = "airsense-frontend"
   publish = "airsense-frontend/dist"
   command = "npm run build"
 
