@@ -56,7 +56,7 @@ const SensorData = () => {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         setLocation({
-                            latitude: position.coords.latitude,
+                            latitude: position.coords.latitude, //30.280285, -97.733052 // Austin, TX
                             longitude: position.coords.longitude,
                         });
                     },
